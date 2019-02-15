@@ -1,0 +1,25 @@
+<h1>Login</h1>
+
+<form [formGroup]="loginForm" (ngSubmit)="login()">
+
+  <label>
+    Name:
+    <input type="text" formControlName="name">
+  </label><br>
+
+  <label>
+    Password:
+    <input type="text" formControlName="password">
+  </label><br>
+
+  <label>
+    Region:
+    <input type="radio" name="region" value="india" formControlName="region" checked> India
+    <input type="radio" name="region" value="austrelia" formControlName="region"> Austrelia
+    <input type="radio" name="region" value="us" formControlName="region"> Us
+  </label><br>
+
+  <button type="submit" [disabled]="!loginForm.valid">Submit</button><br>
+
+</form>
+<div>You are connected to {{country}}</div>

@@ -1,0 +1,258 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var app = require('../app');
+var debug = require('debug')('router:server');
+var http = require('http');
+const util = require('util');
+const RedisOps = require('../routes/redis-ops');
+var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+var redis = require("redis"),
+  client = redis.createClient(),
+  subscriber = redis.createClient(),
+  publish = redis.createClient();
+
+
+/**
+ * Create HTTP server.
+ */
+
+var server = http.createServer(app);
+var io = require('socket.io')(server);
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
+
+deleteConnectedUsers();
+// getConnectedUsers();
+subscriber.subscribe("admin-count", (err, data) => {
+  console.log("subscribe", data);
+});
+
+subscriber.subscribe("admin-users", (err, data) => {
+  console.log("subscribe", data);
+});
+
+subscriber.on('message', (channel, message) => {
+  if (channel === 'admin-count') {
+    io.emit('admin-count', message);
+  }
+  if (channel === 'admin-users') {
+    io.emit('admin-users', message);
+  }
+  console.log(`Received the following message from ${channel}: ${message}`);
+
+});
+
+// publish.publish("sub", "hello", (err, data) => {
+//   io.emit('admin', "hello");
+//   console.log("data", data);
+//   console.log("err", err);
+// })
+/**
+ * Get port from environment and store in Express.
+ */
+io.on('connection', function (socket) {
+  console.log("socket connected", socket.request._query);
+  let obj = {};
+  obj[socket.request._query.name] = socket.request._query.region;
+  client.set(socket.request._query.region + "==" + socket.id + "==" + socket.request._query.name, socket.request._query.name,
+    () => {
+      getConnectedUsers().then(data => {
+        let array = [...data.india, ...data.austrelia, ...data.us];
+        console.log(array.length);
+        publish.publish('admin-count', array.length.toString());
+      })
+      RedisOps.getUsers().then(data => {
+        console.log("data",data);
+        let ind = [];
+        let aus = [];
+        let us = [];
+        console.log("data", data);
+        data.india.forEach(element => {
+          let str = element.split('==');
+          ind.push(str[2]);
+        });
+
+        data.austrelia.forEach(element => {
+          let str = element.split('==');
+          aus.push(str[2]);
+        });
+
+        data.us.forEach(element => {
+          let str = element.split('==');
+          us.push(str[2]);
+        });
+
+        let obj = {
+          india: ind,
+          aus: aus,
+          us: us
+        }
+        console.log("obj", obj);
+        publish.publish('admin-users', JSON.stringify(obj));
+      })
+      // client.keys('india-*', (err, data) => {
+      //   console.log("err", err);
+      //   console.log("data", data);
+      // });
+    });
+
+  socket.on('disconnect', function () {
+    console.log("socket disconnected", socket.id);
+    client.keys(`*==${socket.id}==*`, (err, data) => {
+      console.log("disconnected client", data);
+      client.DEL(data[0], (err, data) => {
+        console.log("key is deleted", data);
+        getConnectedUsers().then(data => {
+          let array = [...data.india, ...data.austrelia, ...data.us];
+          console.log(array.length);
+          publish.publish('sub', array.length.toString());
+        })
+        // client.keys('india-*', (err, keys) => {
+        //   console.log("keys", keys, err);
+        //   publish.publish('sub', keys.length.toString());
+        //   // io.emit('admin', keys.length.toString());
+        // })
+      })
+    });
+
+  });
+
+  // client.keys('india-*', (err, keys) => {
+  //   console.log("keys", keys, err);
+  //   publish.publish('sub', keys.length.toString());
+  //   // io.emit('admin', keys.length.toString());
+  // })
+
+});
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  console.log('Listening on ' + bind);
+}
+
+function getConnectedUsers() {
+  return new Promise((resolve, reject) => {
+    let getKeys = util.promisify(client.keys).bind(client);
+    let indianUser = [];
+    let australianUser = [];
+    let usUser = [];
+    getKeys('india==*')
+      .then(data => {
+        indianUser = data;
+        console.log("india", data);
+        return getKeys('austrelia==*')
+      })
+      .then(data => {
+        australianUser = data;
+        console.log("austrelia", data);
+        return getKeys('us==*')
+      })
+      .then(data => {
+        usUser = data;
+        console.log("us", data);
+        let obj = {
+          india: indianUser,
+          austrelia: australianUser,
+          us: usUser
+        }
+        return resolve(obj);
+      })
+      .catch(e => {
+        console.log("e", e);
+      })
+  })
+}
+
+function deleteConnectedUsers() {
+  let getKeys = util.promisify(client.keys).bind(client);
+  let deleteKeys = util.promisify(client.del).bind(client);
+  let deleteKeysArray = (keyArray) => {
+    keyArray.forEach(element => {
+      deleteKeys(element)
+    });
+  }
+  getKeys('india==*')
+    .then(data => {
+      console.log("india", ...data);
+      deleteKeysArray(data);
+      // return deleteKeys(...data)
+    })
+
+  getKeys('austrelia==*')
+    .then(data => {
+      console.log("austrelia", data);
+      deleteKeysArray(data);
+    })
+
+  getKeys('us==*')
+    .then(data => {
+      console.log("us", data);
+      deleteKeysArray(data);
+    })
+
+}

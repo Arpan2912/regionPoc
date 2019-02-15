@@ -1,0 +1,33 @@
+<h1>Admin Panel</h1>
+<p (click)="connect()">
+  Connect
+</p>
+
+<div *ngIf="users">
+  <div *ngIf="users.india">
+    <div><b>India</b></div>
+    <div *ngFor="let i of users.india">
+      <div>{{i}}</div>
+    </div>
+    <hr />
+  </div>
+  <br />
+  <br />
+  <div *ngIf="users.aus">
+    <div><b>Austrelia</b></div>
+    <div *ngFor="let i of users.aus">
+      <div>{{i}}</div>
+    </div>
+    <hr />
+  </div>
+  <br />
+  <br />
+  <div *ngIf="users.us">
+    <div><b>Us</b></div>
+    <div *ngFor="let i of users.us">
+      <div>{{i}}</div>
+    </div>
+  </div>
+  <br />
+  <br />
+</div>
