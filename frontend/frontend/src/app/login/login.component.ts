@@ -39,7 +39,7 @@ export class LoginComponent implements OnInit {
         let res = JSON.parse(data['_body']);
         console.log("res", res.name, res.region);
         this.country = res.region;
-        const socket = io(`http://localhost:3000?name=${res.name}&region=${res.region}`);
+        const socket = io(`http://${res.ip}?name=${res.name}&region=${res.region}`);
 
         socket.on('connect', function (err, io) {
       

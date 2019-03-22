@@ -10,6 +10,11 @@ var http = require('http');
 var redis = require("redis"),
   client = redis.createClient();
 var os = require('os');
+const Redis = require('ioredis');
+
+const pub = new Redis();
+const channel = 'poc';
+
 var ifaces = os.networkInterfaces();
 let address = '';
 Object.keys(ifaces).forEach(function (ifname) {
@@ -46,6 +51,7 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+var io = require('socket.io')(server);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -54,6 +60,33 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+
+
+io.on('connection', function (socket) {
+  console.log("socket connected", socket.request._query);
+  let obj = {};
+  obj[socket.request._query.name] = socket.request._query.region;
+  client.set(socket.request._query.region + "==" + socket.id + "==" + socket.request._query.name, socket.request._query.name,
+    () => {
+      pub.publish(channel, 'data');
+
+
+    });
+
+  socket.on('disconnect', function () {
+    console.log("socket disconnected", socket.id);
+    client.keys(`*==${socket.id}==*`, (err, data) => {
+      console.log("disconnected client", data);
+      client.DEL(data[0], (err, data) => {
+        console.log("key is deleted", data);
+        pub.publish(channel, 'data');
+      })
+    });
+
+  });
+});
+
 
 /**
  * Normalize a port into a number, string, or false.
