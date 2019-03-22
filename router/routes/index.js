@@ -2,11 +2,11 @@ var express = require('express');
 var router = express.Router();
 var redis = require("redis"),
   client = redis.createClient({
-    host: "192.168.4.3"
+    host: process.env.REDIS_HOST
   });
 const RedisOps = require('./redis-ops');
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://192.168.4.3/test');
+mongoose.connect(`mongodb://${process.env.MONGO_HOST}/test`);
 
 const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
@@ -20,29 +20,7 @@ const user = new Schema({
 });
 
 const UserModal = mongoose.model('user', user);
-let userDetail = new UserModal({
-  name: 'arpan',
-  password: '123',
-  region: 'india'
-})
 
-let obj = [
-  {
-    name: 'arpan',
-    password: '123',
-    region: 'india'
-  }, {
-    name: 'vinay',
-    password: '123',
-    region: 'austrelia'
-  },
-  {
-    name: 'dipak',
-    password: '123',
-    region: 'us'
-  }
-]
-// userDetail.save();
 // UserModal.insertMany(obj);
 /* GET home page. */
 router.get('/', function (req, res, next) {

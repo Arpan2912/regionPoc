@@ -3,29 +3,31 @@
 /**
  * Module dependencies.
  */
+require('dotenv').config();
 
 var app = require('../app');
 var debug = require('debug')('router:server');
 var http = require('http');
 const util = require('util');
 const RedisOps = require('../routes/redis-ops');
+
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 var redis = require("redis"),
   client = redis.createClient({
-    host: "192.168.4.3"
+    host: process.env.REDIS_HOST
   }),
   subscriber = redis.createClient({
-    host: "192.168.4.3"
+    host: process.env.REDIS_HOST
   }),
   publish = redis.createClient({
-    host: "192.168.4.3"
+    host: process.env.REDIS_HOST
   });
 
 const Redis = require('ioredis');
 
 const redisCli = new Redis({
-  host: "192.168.4.3"
+  host: process.env.REDIS_HOST
 });
 /**
  * Create HTTP server.

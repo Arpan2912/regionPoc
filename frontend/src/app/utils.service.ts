@@ -5,22 +5,23 @@ import { Http } from '@angular/http';
   providedIn: 'root'
 })
 export class UtilsService {
-
+  public host = '192.168.4.10';
+  public url = `http://${this.host}:3000`;
   constructor(private http: Http) { }
 
   public login(body) {
-    return this.http.post(`http://localhost:3000/login`, body).toPromise();
+    return this.http.post(`${this.url}/login`, body).toPromise();
   }
 
   public getUserCount(body) {
-    return this.http.get(`http://localhost:3000/admin`).toPromise();
+    return this.http.get(`${this.url}/admin`).toPromise();
   }
 
   public addUser(body) {
-    return this.http.post(`http://localhost:3000/add-user`, body).toPromise();
+    return this.http.post(`${this.url}/add-user`, body).toPromise();
   }
 
   public getAdminUser(body) {
-    return this.http.get(`http://localhost:3000/admin/get-users`, body).toPromise();
+    return this.http.get(`${this.url}/admin/get-users`, body).toPromise();
   }
 }

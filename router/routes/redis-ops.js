@@ -1,7 +1,7 @@
 
 const redis = require("redis"),
     client = redis.createClient({
-        host: "192.168.4.3"
+        host: process.env.REDIS_HOST
       });
 const util = require('util');
 

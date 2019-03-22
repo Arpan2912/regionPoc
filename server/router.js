@@ -1,10 +1,10 @@
 const redis = require("redis");
 const client = redis.createClient({
-  host: "192.168.4.3"
+  host: process.env.REDIS_HOST
 });
 const Redis = require('ioredis');
 const redisio = new Redis({
-  host: "192.168.4.3"
+  host: process.env.REDIS_HOST
 });
 const channel = 'userConnected';
 
