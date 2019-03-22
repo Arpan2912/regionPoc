@@ -1,10 +1,12 @@
 var express = require('express');
 var router = express.Router();
 var redis = require("redis"),
-  client = redis.createClient();
+  client = redis.createClient({
+    host: "192.168.4.3"
+  });
 const RedisOps = require('./redis-ops');
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect('mongodb://192.168.4.3/test');
 
 const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;

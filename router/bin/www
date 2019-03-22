@@ -12,13 +12,21 @@ const RedisOps = require('../routes/redis-ops');
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 var redis = require("redis"),
-  client = redis.createClient(),
-  subscriber = redis.createClient(),
-  publish = redis.createClient();
+  client = redis.createClient({
+    host: "192.168.4.3"
+  }),
+  subscriber = redis.createClient({
+    host: "192.168.4.3"
+  }),
+  publish = redis.createClient({
+    host: "192.168.4.3"
+  });
 
 const Redis = require('ioredis');
 
-const redisCli = new Redis();
+const redisCli = new Redis({
+  host: "192.168.4.3"
+});
 /**
  * Create HTTP server.
  */

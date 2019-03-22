@@ -1,0 +1,77 @@
+version: '3.5'
+
+services:
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - host
+  
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: "test"
+
+  gateway:
+    image: router
+    build: ./router
+    ports: 
+      - "3000:3000"
+    volumes:
+      - ./router:/app
+    networks: 
+      - host
+    environment:
+     - "NODE_ENV=dev"
+    depends_on:
+      - redis
+      - mongodb
+
+  us:
+    image: us
+    build: ./us
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./us:/app
+    networks: 
+      - host
+    environment:
+     - "NODE_ENV=dev"
+    depends_on:
+      - gateway
+
+  ind:
+    image: ind
+    build: ./ind
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./ind:/app
+    networks: 
+      - host
+    environment:
+     - "NODE_ENV=dev"
+    depends_on:
+      - gateway
+  
+  aus:
+    image: aus
+    build: ./aus
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./aus:/app
+    networks: 
+      - host
+    environment:
+     - "NODE_ENV=dev"
+    depends_on:
+      - gateway
+
+networks:
+  host:
+    driver: bridge

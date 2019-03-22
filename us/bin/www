@@ -8,11 +8,15 @@ var app = require('../app');
 var debug = require('debug')('us:server');
 var http = require('http');
 var redis = require("redis"),
-  client = redis.createClient();
+  client = redis.createClient({
+    host: "192.168.4.3"
+  });
 var os = require('os');
 const Redis = require('ioredis');
 
-const pub = new Redis();
+const pub = new Redis({
+  host: "192.168.4.3"
+});
 const channel = 'poc';
 
 var ifaces = os.networkInterfaces();

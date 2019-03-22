@@ -1,8 +1,8 @@
 
 const redis = require("redis"),
-    client = redis.createClient(),
-    subscriber = redis.createClient(),
-    publish = redis.createClient();
+    client = redis.createClient({
+        host: "192.168.4.3"
+      });
 const util = require('util');
 
 module.exports = class RedisOps {
