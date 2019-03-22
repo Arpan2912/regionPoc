@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UtilsService {
-  public host = '192.168.4.10';
+  public host = environment.host;
   public url = `http://${this.host}:3000`;
   constructor(private http: Http) { }
 
