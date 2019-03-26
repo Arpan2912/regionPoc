@@ -9,8 +9,7 @@ RUN apk add --update \
 RUN npm install --upgrade npm && mkdir /app && npm config set unsafe-perm true && npm i pm2 -g
 WORKDIR /app
 COPY . /app/
-COPY .env /app/
+COPY .env_aus /app/.env
 RUN npm install
-EXPOSE 3000
-# RUN pm2 start bin/www
+EXPOSE 3002
 CMD pm2 start bin/www && pm2 logs && tail -f /dev/null

@@ -5,19 +5,29 @@
  */
 
 var app = require('../app');
-var debug = require('debug')('aus:server');
+var debug = require('debug')('region:server');
 var http = require('http');
-var redis = require("redis"),
-  client = redis.createClient();
-var os = require('os');
 require('dotenv').config();
+var redis = require("redis"),
+  client = redis.createClient({
+    host: process.env.REDIS_HOST
+  });
+var os = require('os');
+
 const Redis = require('ioredis');
 const publicIp = require('public-ip');
-const pub = new Redis();
+const pub = new Redis({
+  host: process.env.REDIS_HOST
+});
 const channel = 'poc';
 
 // var ifaces = os.networkInterfaces();
-let address = publicIp.v4();
+
+let address = '';
+// publicIp.v4().then(add => {
+//   console.log("address", add);
+//   address = add;
+// })
 // Object.keys(ifaces).forEach(function (ifname) {
 //   var alias = 0;
 
@@ -164,10 +174,15 @@ function onError(error) {
 
 function onListening() {
   var addr = server.address();
-  console.log(process.env.COUNTRY, 'server connected on', address + ':' + port);
-  client.set(process.env.COUNTRY, address + ':' + port);
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+  publicIp.v4().then(add => {
+    console.log("address", add);
+    address = add;
+
+    console.log(process.env.COUNTRY, 'server connected on', address + ':' + port);
+    client.set(process.env.COUNTRY, address + ':' + port);
+    var bind = typeof addr === 'string'
+      ? 'pipe ' + addr
+      : 'port ' + addr.port;
+    debug('Listening on ' + bind);
+  })
 }

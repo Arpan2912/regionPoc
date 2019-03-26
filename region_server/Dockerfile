@@ -6,10 +6,10 @@ RUN apk add --update \
   py-pip \
   build-base \
   && rm -rf /var/cache/apk/*
-RUN npm install --upgrade npm && mkdir /app && npm config set unsafe-perm true
+RUN npm install --upgrade npm && mkdir /app && npm config set unsafe-perm true && npm i pm2 -g
 WORKDIR /app
 COPY . /app/
-# COPY .env /app/
+COPY .env /app/
 RUN npm install
-EXPOSE 3002
-CMD npm start
+EXPOSE 3001
+CMD pm2 start bin/www && pm2 logs && tail -f /dev/null
