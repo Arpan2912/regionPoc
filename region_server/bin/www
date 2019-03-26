@@ -3,11 +3,17 @@
 /**
  * Module dependencies.
  */
+if(!process.env.FILE) {
+  console.error('ENV file name must be required, default is .env');
+  process.env.FILE = '.env'
+}
 
+require('dotenv').config({
+  path: process.env.FILE
+});
 var app = require('../app');
 var debug = require('debug')('region:server');
 var http = require('http');
-require('dotenv').config();
 var redis = require("redis"),
   client = redis.createClient({
     host: process.env.REDIS_HOST
@@ -21,34 +27,34 @@ const pub = new Redis({
 });
 const channel = 'poc';
 
-// var ifaces = os.networkInterfaces();
+var ifaces = os.networkInterfaces();
 
 let address = '';
 // publicIp.v4().then(add => {
 //   console.log("address", add);
 //   address = add;
 // })
-// Object.keys(ifaces).forEach(function (ifname) {
-//   var alias = 0;
+Object.keys(ifaces).forEach(function (ifname) {
+  var alias = 0;
 
-//   ifaces[ifname].forEach(function (iface) {
-//     if ('IPv4' !== iface.family || iface.internal !== false) {
-//       // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-//       return;
-//     }
+  ifaces[ifname].forEach(function (iface) {
+    if ('IPv4' !== iface.family || iface.internal !== false) {
+      // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+      return;
+    }
 
-//     if (alias >= 1) {
-//       // this single interface has multiple ipv4 addresses
-//       console.log(ifname + ':' + alias, iface.address);
-//     } else {
-//       // this interface has only one ipv4 adress
-//       console.log(ifname, iface.address);
-//       if (ifname === 'enp2s0')
-//         address = iface.address
-//     }
-//     ++alias;
-//   });
-// });
+    if (alias >= 1) {
+      // this single interface has multiple ipv4 addresses
+      console.log(ifname + ':' + alias, iface.address);
+    } else {
+      // this interface has only one ipv4 adress
+      console.log(ifname, iface.address);
+      if (ifname === 'enp2s0')
+        address = iface.address
+    }
+    ++alias;
+  });
+});
 
 /**
  * Get port from environment and store in Express.
@@ -174,9 +180,9 @@ function onError(error) {
 
 function onListening() {
   var addr = server.address();
-  publicIp.v4().then(add => {
-    console.log("address", add);
-    address = add;
+  // publicIp.v4().then(add => {
+    // console.log("address", add);
+    // address = add;
 
     console.log(process.env.COUNTRY, 'server connected on', address + ':' + port);
     client.set(process.env.COUNTRY, address + ':' + port);
@@ -184,5 +190,5 @@ function onListening() {
       ? 'pipe ' + addr
       : 'port ' + addr.port;
     debug('Listening on ' + bind);
-  })
+  // })
 }
