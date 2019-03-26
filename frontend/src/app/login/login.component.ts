@@ -27,28 +27,32 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
-   
+
   }
 
   login() {
-   
+
     this._utilsService.login(this.loginForm.value)
       .then(data => {
         let self = this;
         console.log("data", data);
         let res = JSON.parse(data['_body']);
         console.log("res", res.name, res.region);
-        this.country = res.region;
+        // this.country = res.region;
         const socket = io(`http://${res.ip}?name=${res.name}&region=${res.region}`);
-
+        self = this;
         socket.on('connect', function (err, io) {
-      
+          self.country = res.region;
           // socket.on('admin', (data) => {
           //   self.count = data;
           //   console.log("data", data);
           //   console.log("err", err);
           // })
-        });
+        })
+
+      })
+      .catch(e => {
+        alert("login failed");
       })
 
   }

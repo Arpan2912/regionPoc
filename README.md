@@ -14,4 +14,39 @@ docker rm -f region_india \
 && docker build --tag region_india  . \
 && docker run --name region_india -p 3001:3001 region_india
 
+# start india server
+```
+node bin/www
+```
+OR
+```
+npm start
+```
+# start austrelia server
+```
+FILE=.env_aus node bin/www 
+```
+OR 
+```
+npm run start:aus
+```
 
+# start us server
+```
+FILE=.env_us node bin/www 
+```
+OR
+```
+npm run start:us
+```
+
+# Frontend
+
+# register user
+path : /register
+
+# login
+path : /
+
+# admin
+path : /admin

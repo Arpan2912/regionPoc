@@ -27,7 +27,11 @@ export class RegisterComponent implements OnInit {
     console.log("register form", this.registerForm.value);
     this._utilsService.addUser(this.registerForm.value)
       .then(data => {
+        alert('registration success');
         console.log("data", data);
+      })
+      .catch(e => {
+        alert('registration failed');
       })
   }
 
